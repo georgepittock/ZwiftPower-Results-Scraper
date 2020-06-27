@@ -71,8 +71,6 @@ def points_calculator(category, regional_position):  # Function to calculate  po
         elif category == "D":  # in cat D all riders receive a value of points of 31 - their position
             if regional_position < 31:
                 points = 31 - regional_position
-        elif category == "B+":
-            points = 1000
         return points
 
 
@@ -250,6 +248,7 @@ with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # op
     MaleCategoryList = []  # setting category as blank so a change is recognised
     for row in reader:
         try:
+
             if row[4] in validClubs and row[7] == "1":  # only search CSV for relevant clubs + men
                 if row[0] not in MaleCategoryList:
                     if row[0] == "A":
@@ -365,7 +364,7 @@ ClubFinalOutput = sorted(
 write_data(ClubFinalOutput, "Full Club Results" + date.strftime("%Y, %B, %d") + '.csv')
 print(datetime.now(),
       Fore.GREEN + "Process Complete, check your folder for the results")  # print that the process is complete
-os.remove('results.csv')
+# os.remove('results.csv')
 os.remove("Club Results/Full unsorted club Results" + date.strftime("%Y, %B, %d") + '.csv')
 
 print("Execution time =", datetime.now() - date)
