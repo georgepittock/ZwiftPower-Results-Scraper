@@ -1,12 +1,7 @@
-import csv
-import os
-import re
-import time as timeModule
+import csv, os, re, requests, time as timeModule
 from collections import namedtuple
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import groupby
-
-import requests
 from bs4 import BeautifulSoup
 from colorama import Fore, Back, Style, init
 
@@ -278,13 +273,10 @@ with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # op
                     points = int(0)  # and they will receive 0 points
                 elif position != 0:  # if they received a finish position i.e. they were not DQed,
                     position_for_file = bcse_position  # position in file will be the value of the variable bcse_position
-                try:
-                    if cat == "A" and datetime.strptime(row[3], "%H:%M:%S.%f") > MaxTime:
-                        points = int(0)
-                        position_for_file = "DQ Time-Cut"
-                        cat = "Time Cut"
-                except ValueError:
-                    pass
+                if cat == "A" and datetime.strptime(row[3], "%H:%M:%S.%f") > MaxTime:
+                    points = int(0)
+                    position_for_file = "DQ Time-Cut"
+                    cat = "Time Cut"
                 data = {'Position': position_for_file, 'Category': cat, 'Name': name, 'Club': club,
                         'Points': points, 'Time': time}  # dictionary of data to write to CSV
                 # set name of file + opening & writing to output CSV
