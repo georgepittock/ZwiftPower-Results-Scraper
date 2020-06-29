@@ -1,15 +1,20 @@
-import csv, os, re, requests, time as timeModule
+import csv
+import os
+import re
+import time as timeModule
 from collections import namedtuple
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from itertools import groupby
+import requests
 from bs4 import BeautifulSoup
 from colorama import Fore, Back, Style, init
 
-# setting color to auto-reset
-init(autoreset=True)
+init(autoreset=True)  # setting color to auto-reset
 date = datetime.now()  # getting date
 # creating dictionary of validClubs and ids from validClubs txt file
-disqualification_reasons = ["WKG", "UPG", "ZP", "HR", "HEIGHT", "ZRVG", "new", "AGE", "DQ", "MAP", "20MINS", "5MINS"]
+disqualification_reasons = ["WKG", "UPG", "ZP", "HR", "HEIGHT", "ZRVG", "new",
+                            "AGE", "DQ", "MAP", "20MINS", "5MINS"]
+MIDNIGHT = time()
 validClubs = {}
 # opening txt file
 with open("validclubs.txt") as f:
@@ -21,7 +26,8 @@ with open("validclubs.txt") as f:
 
 # setting headers for request
 headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36/wziDaIGv-15"}
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                  "(KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36/wziDaIGv-15"}
 # url of php script which post request is sent to
 url = "http://choddo.co.uk/ReadZP5.php"
 
@@ -39,10 +45,10 @@ def write_csv(path, inputdata):
         writer.writerows(inputdata)
 
 
-def remove_values_after_ambiguous_characters(text,
-                                             there=re.compile(re.escape('(' or '[' or '|' or '/' or '{' or 'CCR' or
-                                                                        'RMCC' or 'Penge' or 'SDW' or 'PWCC' or 'EGCC' or
-                                                                        'VCM' or 'MVC' or '[LD' or '[CChasers') + '.*')):
+def remove_values_after_ambiguous_characters(
+        text, there=re.compile(re.escape('(' or '[' or '|' or '/' or '{' or 'CCR' or
+                                         'RMCC' or 'Penge' or 'SDW' or 'PWCC' or 'EGCC' or 'VCM' or 'MVC' or '[LD' or
+                                         '[CChasers') + '.*')):
     return there.sub('', text)  # function to remove any text after ambiguous characters
 
 
@@ -82,16 +88,15 @@ def write_csv_individual_results(path, values):  # function to write to CSV the 
         writer.writerow(values)  # write input values to csv
 
 
-def get_names():  # Function to get the names of the riders
-    names = row[2]  # name = row[2] in file
-    riders1 = ' '.join(names.split()[:4])  # remove any values after the 4th word
+def get_names(rider_name):  # Function to get the names of the riders
+    riders1 = ' '.join(rider_name.split()[:4])  # remove any values after the 4th word
     riders2 = remove_values_after_ambiguous_characters(riders1)  # removing all values after the ambiguous characters
     riders = riders2.replace(r'[^a-zA-Z0-9]', '')  # replacing all ambiguous values with nothing
     return riders
 
 
-def get_clubs():  # Function to get the clubs of the riders
-    club_name = validClubs.get(row[4])  # searches dictionary of validClubs for the id and returns the value
+def get_clubs(team):  # Function to get the clubs of the riders
+    club_name = validClubs.get(team)  # searches dictionary of validClubs for the id and returns the value
     return club_name
 
 
@@ -133,7 +138,7 @@ def csv_to_tuple(path, tupleToUse):  # function to turn the merged CSVs into nam
 def write_data(data_in, data_out):  # function to write namedtuple to a new CSV
     out = []  # create a list for the the namedtuples
 
-    def return_teams(x):  # function to return the value of the team in the group
+    def return_teams(x):  # function to return the value of the team_id in the group
         return x.Team
 
     def return_number_of_riders():
@@ -144,14 +149,14 @@ def write_data(data_in, data_out):  # function to write namedtuple to a new CSV
         return NumOfRiders
 
     for team, group in groupby(data_in,
-                               return_teams):  # creating a group of namedtuples where each group is a different team
+                               return_teams):  # creating a group of namedtuples where each group is a different team_id
         group = list(group)  # creating a list of clubs, grouped so there is not any repeats
         if team == "Team":
             pass
         else:
             d = {'Team': team, 'Points': sum(float(i.Points) for i in group),
                  'AvgPoints': sum(float(i.Points) for i in group) / return_number_of_riders(),
-                 'NumOfRider': return_number_of_riders()}  # defining a dictionary for each team where team is the value Team,
+                 'NumOfRider': return_number_of_riders()}  # defining a dictionary for each team_id where team_id is the value Team,
             # points is the sum of all the points of riders in that group,
             # AvgPoints is the avg value of points and NumOfRiders is number of items in the group
             out.append(d)  # adding the above dictionary to the list out
@@ -173,7 +178,8 @@ with open("Club Results/Full Club Results(not sorted)" + date.strftime("%Y, %B, 
 
 # getting data race id
 race_id = input(
-    "This programme will give you a brief overview of the results but to view the full results for each category view the relevant output file. \n"
+    "This programme will give you a brief overview of the results but to view the full results "
+    "for each category view the relevant output file. \n"
     "Please enter the race ID and press enter:"
     "\n")
 date = datetime.now()
@@ -247,76 +253,77 @@ with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # op
     reader = csv.reader(file, skipinitialspace=True, escapechar='\\')  # skipping headers
     MaleCategoryList = []  # setting category as blank so a change is recognised
     for row in reader:
-        try:
-
-            if row[4] in validClubs and row[7] == "1":  # only search CSV for relevant clubs + men
-                if row[0] not in MaleCategoryList:
-                    if row[0] == "A":
-                        firstPlaceTime = datetime.strptime(row[3], "%H:%M:%S.%f")
-                        timeInSecs = firstPlaceTime.second + firstPlaceTime.minute * 60 + firstPlaceTime.hour * 3600
-                        timeDifference = timeInSecs * 1.15
-                        MaxTime = datetime.strptime(convert(timeDifference), "%H:%M:%S")
+        if len(row) == 9:
+            cat, position, name, time, team_id, avg_power, twenty_min_wkg, male, twenty_min_watts = row
+            if time != 'Time':
+                time = datetime.strptime(time, "%H:%M:%S.%f")
+            if team_id in validClubs and male == "1":  # only search CSV for relevant clubs + men
+                if cat not in MaleCategoryList:
+                    if cat == "A":
+                        first_place_time = time
+                        time_span = first_place_time - datetime.combine(first_place_time, MIDNIGHT)
+                        time_difference = time_span.total_seconds() * 1.15
+                        MaxTime = datetime.strptime(convert(time_difference), "%H:%M:%S")
                     bcse_position = 1  # reset the rider's finish position to 1
-                    MaleCategoryList.append(row[0])
+                    MaleCategoryList.append(cat)
                 else:  # if category does not change increase BCSE position by 1
                     bcse_position = bcse_position + 1
-                position = row[1]  # second index in row contains position number
-                cat = row[0]
-                time = row[3]
-                club = get_clubs()  # using get_clubs function to return clubs value
-                name = get_names()  # using get_names function to return names which have been cleaned up
-                points = points_calculator(cat,
-                                           bcse_position)  # calculate rider points for that cat & position, including DQs
+                club = get_clubs(team_id)  # using get_clubs function to return clubs value
+                name = get_names(name)  # using get_names function to return names which have been cleaned up
+                points = points_calculator(cat, bcse_position)  # calculate rider points for that cat & position, including DQs
                 if position == "0":  # set the position to be written to CSV, which needs to be different if the rider was DQed (position ==0)
                     position_for_file = "DQ"  # if rider was DQ'ed position in file will be DQ instead of zero
                     points = int(0)  # and they will receive 0 points
                 elif position != 0:  # if they received a finish position i.e. they were not DQed,
                     position_for_file = bcse_position  # position in file will be the value of the variable bcse_position
-                if cat == "A" and datetime.strptime(row[3], "%H:%M:%S.%f") > MaxTime:
-                    points = int(0)
-                    position_for_file = "DQ Time-Cut"
-                    cat = "Time Cut"
+                try:
+                    if cat == "A" and time > MaxTime:
+                        points = int(0)
+                        position_for_file = "DQ Time-Cut"
+                        cat = "Time Cut"
+                except ValueError:
+                    pass
                 data = {'Position': position_for_file, 'Category': cat, 'Name': name, 'Club': club,
-                        'Points': points, 'Time': time}  # dictionary of data to write to CSV
-                # set name of file + opening & writing to output CSV
+                        'Points': points}  # dictionary of data to write to CSV
+                # set rider_name of file + opening & writing to output CSV
                 write_csv_individual_results(
                     ('Male/Individual Results/Male output' + cat + ' ' + date.strftime("%Y, %B, %d") + '.csv'),
                     values=data)
-        except IndexError:  # ignore blank rows etc.
-            pass
 
 with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # repeat the above section of code for women
     reader = csv.reader(file, skipinitialspace=True, escapechar='\\')
     FemaleCategoryList = []  # as women_category rather than cat, so it resets completely
     for row in reader:
-        try:
-            if row[4] in validClubs and row[7] == "0":  # only search CSV for relevant clubs
-                if row[0] not in FemaleCategoryList:  # Each time there's a change of category,
-                    BCSE_Women_Position = 1  # reset the rider's finish position to 1
-                    FemaleCategoryList.append(row[0])
-                else:
-                    BCSE_Women_Position = BCSE_Women_Position + 1
-                position = row[1]  # Second index in row contains position number
-                women_category = row[0]
-                club = get_clubs()
-                name = get_names()
-                points = points_calculator(women_category,
-                                           BCSE_Women_Position)  # calculate rider points for that cat & position, including DQs
-                if position == "0":  # Set the position to be written to CSV, which needs to be different if the rider was DQed (position ==0)
-                    position_for_file = "DQ"
-                    points = int(0)
-                elif position != 0:
-                    position_for_file = BCSE_Women_Position
-                # dictionary of data to write to CSV
-                data = {'Position': position_for_file, 'Category': women_category, 'Name': name, 'Club': club,
-                        'Points': points}
-                # set name of file + opening & writing to output CSV
-                write_csv_individual_results(
-                    ('Female/Individual Results/Female output' + women_category + ' ' + date.strftime(
-                        "%Y, %B, %d") + '.csv'),
-                    values=data)
-        except IndexError:
-            pass
+        if len(row) == 9:
+            cat, position, name, time, team_id, avg_power, twenty_min_wkg, male, twenty_min_watts = row
+            if time != 'Time':
+                time = datetime.strptime(time, "%H:%M:%S.%f")
+            try:
+                if team_id in validClubs and male == "1":  # only search CSV for relevant clubs + men
+                    if cat not in FemaleCategoryList:  # Each time there's a change of category,
+                        BCSE_Women_Position = 1  # reset the rider's finish position to 1
+                        FemaleCategoryList.append(cat)
+                    else:
+                        BCSE_Women_Position = BCSE_Women_Position + 1
+                    position = row[1]  # Second index in row contains position number
+                    women_category = row[0]
+                    club = get_clubs(team_id)  # using get_clubs function to return clubs value
+                    name = get_names(name)  # using get_names function to return names which have been cleaned up
+                    points = points_calculator(cat, BCSE_Women_Position)  # calculate rider points for that cat & position, including DQs
+                    if position == "0":  # Set the position to be written to CSV, which needs to be different if the rider was DQed (position ==0)
+                        position_for_file = "DQ"
+                        points = int(0)
+                    elif position != 0:
+                        position_for_file = BCSE_Women_Position
+                    # dictionary of data to write to CSV
+                    data = {'Position': position_for_file, 'Category': women_category, 'Name': name, 'Club': club, 'Points': points}
+                    # set rider_name of file + opening & writing to output CSV
+                    write_csv_individual_results(
+                        ('Female/Individual Results/Female output' + women_category + ' ' + date.strftime(
+                            "%Y, %B, %d") + '.csv'),
+                        values=data)
+            except IndexError:
+                pass
 
 merge_csv(r"Female\\Individual Results\\", "Female")
 merge_csv(r"Male\\Individual Results\\", "Male")
@@ -340,7 +347,7 @@ try:
 except RuntimeError:  # unless the row is blank, when it will be passed
     pass
 
-if A+B+C+D > 0:
+if A + B + C + D > 0:
     write_data(MenFinalOutput,
                "Club Results/Men's Club Results" + date.strftime("%Y, %B, %d") + ".csv")  # write the men's data to csv
 else:  # unless there is an NameError i.e. the variable doesn't exist - this happens if there are no values because is it a gender specific race
@@ -364,9 +371,17 @@ ClubFinalOutput = sorted(
 write_data(ClubFinalOutput, "Full Club Results" + date.strftime("%Y, %B, %d") + '.csv')
 print(datetime.now(),
       Fore.GREEN + "Process Complete, check your folder for the results")  # print that the process is complete
-# os.remove('results.csv')
+os.remove('results.csv')
 os.remove("Club Results/Full unsorted club Results" + date.strftime("%Y, %B, %d") + '.csv')
 
 print("Execution time =", datetime.now() - date)
-
-timeModule.sleep(int(3600))  # sleep to stop terminal closing automatically so overview can be seen
+print("\n\n\n\nClosing in 5 seconds")
+timeModule.sleep(1)
+print("Closing in 4 seconds")
+timeModule.sleep(1)
+print("Closing in 3 seconds")
+timeModule.sleep(1)
+print("Closing in 2 seconds")
+timeModule.sleep(1)
+print("Closing in 1 seconds")
+timeModule.sleep(1)
