@@ -11,18 +11,18 @@ from colorama import Fore, Back, Style, init
 
 init(autoreset=True)  # setting color to auto-reset
 date = datetime.now()  # getting date
-# creating dictionary of validClubs and ids from validClubs txt file
+# creating dictionary of valid_clubs and ids from valid_clubs txt file
 disqualification_reasons = ["WKG", "UPG", "ZP", "HR", "HEIGHT", "ZRVG", "new",
                             "AGE", "DQ", "MAP", "20MINS", "5MINS"]
 MIDNIGHT = time()
-validClubs = {}
+valid_clubs = {}
 # opening txt file
 with open("validclubs.txt") as f:
     for line in f:
         # defining dictionary in form key is before first whitespace, value is after whitespace
         clubid, club = line.strip("\n").split(maxsplit=1)
         # defining in dictionary club is the value of the id
-        validClubs[clubid] = club
+        valid_clubs[clubid] = club
 
 # setting headers for request
 headers = {
@@ -97,7 +97,7 @@ def get_names(rider_name):  # Function to get the names of the riders
 
 
 def get_clubs(team):  # Function to get the clubs of the riders
-    club_name = validClubs.get(team)  # searches dictionary of validClubs for the id and returns the value
+    club_name = valid_clubs.get(team)  # searches dictionary of valid_clubs for the id and returns the value
     return club_name
 
 
@@ -230,19 +230,19 @@ with open("results.csv", 'rt', encoding='UTF-8',
     A = B = C = D = E = Q = W = 0  # setting all values to 0 so we can work out number of riders in each category
     for row in reader:
         try:
-            if row[4] in validClubs and row[7] == "0":  # if club is in validClubs.txt and gender = female
+            if row[4] in valid_clubs and row[7] == "0":  # if club is in valid_clubs.txt and gender = female
                 W = W + 1  # each time this condition is met increase value of W by 1, where W is the amount of women
-            if row[4] in validClubs and "A" == row[0]:  # if club is in validClubs.txt and category is A
+            if row[4] in valid_clubs and "A" == row[0]:  # if club is in valid_clubs.txt and category is A
                 A = A + 1  # each time this condition is met increase value of A by 1
-            if row[4] in validClubs and "B" == row[0]:  # if club is in validClubs.txt and category is B
+            if row[4] in valid_clubs and "B" == row[0]:  # if club is in valid_clubs.txt and category is B
                 B = B + 1  # each time this condition is met increase value of B by 1
-            if row[4] in validClubs and "C" == row[0]:  # if club is in validClubs.txt and category is C
+            if row[4] in valid_clubs and "C" == row[0]:  # if club is in valid_clubs.txt and category is C
                 C = C + 1  # each time this condition is met increase value of C by 1
-            if row[4] in validClubs and "D" == row[0]:  # if club is in validClubs.txt and category is D
+            if row[4] in valid_clubs and "D" == row[0]:  # if club is in valid_clubs.txt and category is D
                 D = D + 1  # each time this condition is met increase value of D by 1
-            if row[4] in validClubs and row[0] in disqualification_reasons:  # all the possible DQ reason
+            if row[4] in valid_clubs and row[0] in disqualification_reasons:  # all the possible DQ reason
                 Q = Q + 1  # each time this condition is met increase value of Q by 1, where Q is the number of riders DQ'ed
-            if row[4] in validClubs and "E" == row[0]:  # if club is in validClubs.txt and category is E
+            if row[4] in valid_clubs and "E" == row[0]:  # if club is in valid_clubs.txt and category is E
                 E = E + 1  # each time this condition is met increase value of E by 1
         except IndexError:  # ignore errors where row is empty
             pass
@@ -252,21 +252,21 @@ print("There were", total, "riders", W, " were women:", "\nCat A:", A, "\nCat B:
 
 with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # opening the full results file
     reader = csv.reader(file, skipinitialspace=True, escapechar='\\')  # skipping headers
-    MaleCategoryList = []  # setting category as blank so a change is recognised
+    male_category_list = []  # setting category as blank so a change is recognised
     for row in reader:
-        if len(row) == 9:
+        if len(row) == 9:  # only finding rows with all these values, some without a team have len == 8, also ignores blank rows
             cat, position, name, time, team_id, avg_power, twenty_min_wkg, male, twenty_min_watts = row
-            if time != 'Time':
-                time = datetime.strptime(time, "%H:%M:%S.%f")
-            if team_id in validClubs and male == "1":  # only search CSV for relevant clubs + men
-                if cat not in MaleCategoryList:
+            if time != 'Time':  # ignore first row
+                time = datetime.strptime(time, "%H:%M:%S.%f")  # get time as datetime
+            if team_id in valid_clubs and male == "1":  # only search CSV for relevant clubs + men
+                if cat not in male_category_list:
                     if cat == "A":
-                        first_place_time = time
+                        first_place_time = time  # getting the first place time
                         time_span = first_place_time - datetime.combine(first_place_time, MIDNIGHT)
-                        time_difference = time_span.total_seconds() * 1.15
-                        MaxTime = datetime.strptime(convert(time_difference), "%H:%M:%S")
+                        time_difference = time_span.total_seconds() * 1.15  # getting 115% of the first place time
+                        max_time = datetime.strptime(convert(time_difference), "%H:%M:%S")  # converting 115% to a datetime object
                     bcse_position = 1  # reset the rider's finish position to 1
-                    MaleCategoryList.append(cat)
+                    male_category_list.append(cat)  # add cat to cat list
                 else:  # if category does not change increase BCSE position by 1
                     bcse_position = bcse_position + 1
                 club = get_clubs(team_id)  # using get_clubs function to return clubs value
@@ -274,12 +274,12 @@ with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # op
                 points = points_calculator(cat, bcse_position)  # calculate rider points for that cat & position, including DQs
                 if position == "0":  # set the position to be written to CSV, which needs to be different if the rider was DQed (position ==0)
                     position_for_file = "DQ"  # if rider was DQ'ed position in file will be DQ instead of zero
-                    points = int(0)  # and they will receive 0 points
+                    points = 0  # and they will receive 0 points
                 elif position != 0:  # if they received a finish position i.e. they were not DQed,
                     position_for_file = bcse_position  # position in file will be the value of the variable bcse_position
                 try:
-                    if cat == "A" and time > MaxTime:
-                        points = int(0)
+                    if cat == "A" and time > max_time:
+                        points = 0  # anyone over the 115% time gets 0 points
                         position_for_file = "DQ Time-Cut"
                         cat = "Time Cut"
                 except ValueError:
@@ -300,7 +300,7 @@ with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # re
             if time != 'Time':
                 time = datetime.strptime(time, "%H:%M:%S.%f")
             try:
-                if team_id in validClubs and male == "0":  # only search CSV for relevant clubs + men
+                if team_id in valid_clubs and male == "0":  # only search CSV for relevant clubs + women
                     if cat not in FemaleCategoryList:  # Each time there's a change of category,
                         BCSE_Women_Position = 1  # reset the rider's finish position to 1
                         FemaleCategoryList.append(cat)
