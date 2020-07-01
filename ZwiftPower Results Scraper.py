@@ -285,7 +285,7 @@ with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # op
                 except ValueError:
                     pass
                 data = {'Position': position_for_file, 'Category': cat, 'Name': name, 'Club': club,
-                        'Points': points}  # dictionary of data to write to CSV
+                        'Points': points, 'Time': time}  # dictionary of data to write to CSV
                 # set rider_name of file + opening & writing to output CSV
                 write_csv_individual_results(
                     ('Male/Individual Results/Male output' + cat + ' ' + date.strftime("%Y, %B, %d") + '.csv'),
@@ -300,7 +300,7 @@ with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # re
             if time != 'Time':
                 time = datetime.strptime(time, "%H:%M:%S.%f")
             try:
-                if team_id in validClubs and male == "1":  # only search CSV for relevant clubs + men
+                if team_id in validClubs and male == "0":  # only search CSV for relevant clubs + men
                     if cat not in FemaleCategoryList:  # Each time there's a change of category,
                         BCSE_Women_Position = 1  # reset the rider's finish position to 1
                         FemaleCategoryList.append(cat)
@@ -317,11 +317,10 @@ with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # re
                     elif position != 0:
                         position_for_file = BCSE_Women_Position
                     # dictionary of data to write to CSV
-                    data = {'Position': position_for_file, 'Category': women_category, 'Name': name, 'Club': club, 'Points': points}
+                    data = {'Position': position_for_file, 'Category': women_category, 'Name': name, 'Club': club, 'Points': points, 'Time': time.time()}
                     # set rider_name of file + opening & writing to output CSV
                     write_csv_individual_results(
-                        ('Female/Individual Results/Female output' + women_category + ' ' + date.strftime(
-                            "%Y, %B, %d") + '.csv'),
+                        ('Female/Individual Results/Female output' + women_category + ' ' + date.strftime("%Y, %B, %d") + '.csv'),
                         values=data)
             except IndexError:
                 pass
