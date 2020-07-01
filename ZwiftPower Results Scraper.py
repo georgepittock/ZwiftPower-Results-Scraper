@@ -285,7 +285,7 @@ with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # op
                 except ValueError:
                     pass
                 data = {'Position': position_for_file, 'Category': cat, 'Name': name, 'Club': club,
-                        'Points': points, 'Time': time}  # dictionary of data to write to CSV
+                        'Points': points, 'Time': time.time()}  # dictionary of data to write to CSV
                 # set rider_name of file + opening & writing to output CSV
                 write_csv_individual_results(
                     ('Male/Individual Results/Male output' + cat + ' ' + date.strftime("%Y, %B, %d") + '.csv'),
