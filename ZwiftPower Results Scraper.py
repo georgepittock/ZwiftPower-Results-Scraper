@@ -1,7 +1,7 @@
 import csv
 import os
 import re
-import time as timeModule
+import time as time_module
 from collections import namedtuple
 from datetime import datetime, time, timedelta
 from itertools import groupby
@@ -114,8 +114,8 @@ def merge_csv(path, gender):  # function to merge csvs into one csv
     csv_out = path + "Full " + gender + " Results" + date.strftime(
         "%Y, %B, %d") + '.csv'  # defining the csv of all the merged files
     csv_merge = open(csv_out, 'w')  # opening the final csv
-    for fileToMerge in os.listdir(path):
-        csv_in = open(os.path.join(path, fileToMerge))  # opening each fileToMerge individually
+    for file_to_merge in os.listdir(path):
+        csv_in = open(os.path.join(path, file_to_merge))  # opening each file_to_merge individually
         for item in csv_in:  # every item in the files to be merged,
             try:
                 csv_merge.write(item)  # will be written to a new csv
@@ -125,11 +125,11 @@ def merge_csv(path, gender):  # function to merge csvs into one csv
     csv_merge.close()  # closing the output csv
 
 
-def csv_to_tuple(path, tupleToUse):  # function to turn the merged CSVs into namedtuple
+def csv_to_tuple(path, tuple_to_use):  # function to turn the merged CSVs into namedtuple
     try:
         with open(path, 'r', errors='ignore') as datafile:
             csv_to_tuple_reader = csv.reader(datafile)
-            for row in map(tupleToUse._make, csv_to_tuple_reader):
+            for row in map(tuple_to_use._make, csv_to_tuple_reader):
                 if row[1] != "Team":
                     yield row
     except RuntimeError:
@@ -144,10 +144,10 @@ def write_data(data_in, data_out):  # function to write namedtuple to a new CSV
 
     def return_number_of_riders():
         try:
-            NumOfRiders = sum(int(i.NumOfRiders) for i in group)
+            num_of_riders = sum(int(i.NumOfRiders) for i in group)
         except:
-            NumOfRiders = len(group)
-        return NumOfRiders
+            num_of_riders = len(group)
+        return num_of_riders
 
     for team, group in groupby(data_in,
                                return_teams):  # creating a group of namedtuples where each group is a different team_id
@@ -159,7 +159,7 @@ def write_data(data_in, data_out):  # function to write namedtuple to a new CSV
                  'AvgPoints': sum(float(i.Points) for i in group) / return_number_of_riders(),
                  'NumOfRider': return_number_of_riders()}  # defining a dictionary for each team_id where team_id is the value Team,
             # points is the sum of all the points of riders in that group,
-            # AvgPoints is the avg value of points and NumOfRiders is number of items in the group
+            # AvgPoints is the avg value of points and num_of_riders is number of items in the group
             out.append(d)  # adding the above dictionary to the list out
             with open(data_out, 'w', newline='') as csv_file:  # writing data to a new csv
                 fieldnames = ['Team', 'Points', 'AvgPoints', 'NumOfRider']  # setting row headers of output csv
@@ -293,7 +293,7 @@ with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # op
 
 with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # repeat the above section of code for women
     reader = csv.reader(file, skipinitialspace=True, escapechar='\\')
-    FemaleCategoryList = []  # as women_category rather than cat, so it resets completely
+    female_category_list = []  # as women_category rather than cat, so it resets completely
     for row in reader:
         if len(row) == 9:
             cat, position, name, time, team_id, avg_power, twenty_min_wkg, male, twenty_min_watts = row
@@ -301,21 +301,21 @@ with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # re
                 time = datetime.strptime(time, "%H:%M:%S.%f")
             try:
                 if team_id in valid_clubs and male == "0":  # only search CSV for relevant clubs + women
-                    if cat not in FemaleCategoryList:  # Each time there's a change of category,
-                        BCSE_Women_Position = 1  # reset the rider's finish position to 1
-                        FemaleCategoryList.append(cat)
+                    if cat not in female_category_list:  # Each time there's a change of category,
+                        bcse_women_position = 1  # reset the rider's finish position to 1
+                        female_category_list.append(cat)
                     else:
-                        BCSE_Women_Position = BCSE_Women_Position + 1
+                        bcse_women_position = bcse_women_position + 1
                     position = row[1]  # Second index in row contains position number
                     women_category = row[0]
                     club = get_clubs(team_id)  # using get_clubs function to return clubs value
                     name = get_names(name)  # using get_names function to return names which have been cleaned up
-                    points = points_calculator(cat, BCSE_Women_Position)  # calculate rider points for that cat & position, including DQs
+                    points = points_calculator(cat, bcse_women_position)  # calculate rider points for that cat & position, including DQs
                     if position == "0":  # Set the position to be written to CSV, which needs to be different if the rider was DQed (position ==0)
                         position_for_file = "DQ"
                         points = int(0)
                     elif position != 0:
-                        position_for_file = BCSE_Women_Position
+                        position_for_file = bcse_women_position
                     # dictionary of data to write to CSV
                     data = {'Position': position_for_file, 'Category': women_category, 'Name': name, 'Club': club, 'Points': points, 'Time': time.strftime("%H:%M:%S.%f")}
                     # set rider_name of file + opening & writing to output CSV
@@ -330,30 +330,30 @@ merge_csv(r"Male\\Individual Results\\", "Male")
 
 fields = ("Position", "Category", "Name", "Team", "Points", "Time")  # setting the fields for the namedtuple
 # creating new namedtuple which will contain the results of all categories, one for men, one for women
-FinalIndividualResults = namedtuple('FinalIndividualResults', fields)
+final_individual_results_namedtuple = namedtuple('final_individual_results_namedtuple', fields)
 
 try:
-    MenFinalOutput = sorted(
+    tuple_men_full_results = sorted(
         csv_to_tuple("Male/Individual Results/Full Male Results" + date.strftime("%Y, %B, %d") + ".csv",
-                     FinalIndividualResults),
+                     final_individual_results_namedtuple),
         key=lambda k: k.Team)  # sorting namedtuple into a grouped list
 except RuntimeError:  # unless the row is blank, when it will be passed
     pass
 try:
-    WomenFinalOutput = sorted(
+    tuple_women_full_results = sorted(
         csv_to_tuple("Female/Individual Results/Full Female Results" + date.strftime("%Y, %B, %d") + ".csv",
-                     FinalIndividualResults),
+                     final_individual_results_namedtuple),
         key=lambda k: k.Team)  # sorting namedtuple into a grouped list
 except RuntimeError:  # unless the row is blank, when it will be passed
     pass
 
 if A + B + C + D > 0:
-    write_data(MenFinalOutput,
+    write_data(tuple_men_full_results,
                "Club Results/Men's Club Results" + date.strftime("%Y, %B, %d") + ".csv")  # write the men's data to csv
 else:  # unless there is an NameError i.e. the variable doesn't exist - this happens if there are no values because is it a gender specific race
     pass
 if W > 0:
-    write_data(WomenFinalOutput, "Club Results/Women's Club Results" + date.strftime(
+    write_data(tuple_women_full_results, "Club Results/Women's Club Results" + date.strftime(
         "%Y, %B, %d") + ".csv")  # write the women's data to csv
 else:
     pass
@@ -362,13 +362,13 @@ merge_csv('Club Results/', 'unsorted club')
 
 fields_clubs = ("Team", "Points", "AvgPoints", "NumOfRiders")  # setting the fields for the namedtuple
 # creating new namedtuple which will contain the results of all categories, one for men, one for women
-FinalClubResults = namedtuple('FinalClubResults', fields_clubs)
+final_club_results_namedtuple = namedtuple('final_club_results_namedtuple', fields_clubs)
 
-ClubFinalOutput = sorted(
-    csv_to_tuple("Club Results/Full unsorted club Results" + date.strftime("%Y, %B, %d") + '.csv', FinalClubResults),
+tuple_club_full_results = sorted(
+    csv_to_tuple("Club Results/Full unsorted club Results" + date.strftime("%Y, %B, %d") + '.csv', final_club_results_namedtuple),
     key=lambda k: k.Team)  # sorting namedtuple into a grouped list
 
-write_data(ClubFinalOutput, "Full Club Results" + date.strftime("%Y, %B, %d") + '.csv')
+write_data(tuple_club_full_results, "Full Club Results" + date.strftime("%Y, %B, %d") + '.csv')
 print(datetime.now(),
       Fore.GREEN + "Process Complete, check your folder for the results")  # print that the process is complete
 os.remove('results.csv')
@@ -376,13 +376,13 @@ os.remove("Club Results/Full unsorted club Results" + date.strftime("%Y, %B, %d"
 
 print("Execution time =", datetime.now() - date)
 print("Closing in 5 seconds")
-timeModule.sleep(1)
+time_module.sleep(1)
 print("Closing in 4 seconds")
-timeModule.sleep(1)
+time_module.sleep(1)
 print("Closing in 3 seconds")
-timeModule.sleep(1)
+time_module.sleep(1)
 print("Closing in 2 seconds")
-timeModule.sleep(1)
+time_module.sleep(1)
 print("Closing in 1 seconds")
-timeModule.sleep(1)
-timeModule.sleep(int(3600))  # sleep to stop terminal closing automatically so overview can be seen
+time_module.sleep(1)
+time_module.sleep(int(3600))  # sleep to stop terminal closing automatically so overview can be seen
