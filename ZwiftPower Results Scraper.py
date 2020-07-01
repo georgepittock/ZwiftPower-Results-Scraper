@@ -29,7 +29,7 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36/wziDaIGv-15"}
 # url of php script which post request is sent to
-url = "http://choddo.co.uk/ReadZP5.php"
+url = "http://choddo.co.uk/ReadZP6.php"
 
 # startup screen
 string_startup = "'ZwiftPower Results Scraper' by George Pittock"
@@ -375,7 +375,7 @@ os.remove('results.csv')
 os.remove("Club Results/Full unsorted club Results" + date.strftime("%Y, %B, %d") + '.csv')
 
 print("Execution time =", datetime.now() - date)
-print("\n\n\n\nClosing in 5 seconds")
+print("Closing in 5 seconds")
 timeModule.sleep(1)
 print("Closing in 4 seconds")
 timeModule.sleep(1)
@@ -385,3 +385,4 @@ print("Closing in 2 seconds")
 timeModule.sleep(1)
 print("Closing in 1 seconds")
 timeModule.sleep(1)
+timeModule.sleep(int(3600))  # sleep to stop terminal closing automatically so overview can be seen
