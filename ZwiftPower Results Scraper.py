@@ -29,8 +29,7 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36/wziDaIGv-15"}
 # url of php script which post request is sent to
-url = "http://choddo.co.uk/ReadZP6.php"
-
+url = "http://choddo.co.uk/ReadZP5.php"
 
 # startup screen
 string_startup = "'ZwiftPower Results Scraper' by George Pittock"
@@ -254,24 +253,28 @@ with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # op
     reader = csv.reader(file, skipinitialspace=True, escapechar='\\')  # skipping headers
     male_category_list = []  # setting category as blank so a change is recognised
     for row in reader:
-        if len(row) == 9:  # only finding rows with all these values, some without a team have len == 8, also ignores blank rows
-            cat, position, name, time, team_id, avg_power, twenty_min_wkg, male, twenty_min_watts = row
-            if time != 'Time':  # ignore first row
-                time = datetime.strptime(time, "%H:%M:%S.%f")  # get time as datetime
+        if len(row) > 7:
+            cat, position, name, time, team_id, male = row[0], row[1], row[2], row[3], row[4], row[7]
             if team_id in valid_clubs and male == "1":  # only search CSV for relevant clubs + men
+                try:
+                    time = datetime.strptime(time, "%H:%M:%S.%f")  # get time as datetime
+                except ValueError:
+                    time = datetime.strptime(time, "%H:%M:%S.")  # get time as datetime
                 if cat not in male_category_list:
                     if cat == "A":
                         first_place_time = time  # getting the first place time
                         time_span = first_place_time - datetime.combine(first_place_time, MIDNIGHT)
                         time_difference = time_span.total_seconds() * 1.15  # getting 115% of the first place time
-                        max_time = datetime.strptime(convert(time_difference), "%H:%M:%S")  # converting 115% to a datetime object
+                        max_time = datetime.strptime(convert(time_difference),
+                                                     "%H:%M:%S")  # converting 115% to a datetime object
                     bcse_position = 1  # reset the rider's finish position to 1
                     male_category_list.append(cat)  # add cat to cat list
                 else:  # if category does not change increase BCSE position by 1
                     bcse_position = bcse_position + 1
                 club = get_clubs(team_id)  # using get_clubs function to return clubs value
                 name = get_names(name)  # using get_names function to return names which have been cleaned up
-                points = points_calculator(cat, bcse_position)  # calculate rider points for that cat & position, including DQs
+                points = points_calculator(cat,
+                                           bcse_position)  # calculate rider points for that cat & position, including DQs
                 if position == "0":  # set the position to be written to CSV, which needs to be different if the rider was DQed (position ==0)
                     position_for_file = "DQ"  # if rider was DQ'ed position in file will be DQ instead of zero
                     points = 0  # and they will receive 0 points
@@ -295,35 +298,37 @@ with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # re
     reader = csv.reader(file, skipinitialspace=True, escapechar='\\')
     female_category_list = []  # as women_category rather than cat, so it resets completely
     for row in reader:
-        if len(row) == 9:
-            cat, position, name, time, team_id, avg_power, twenty_min_wkg, male, twenty_min_watts = row
-            if time != 'Time':
-                time = datetime.strptime(time, "%H:%M:%S.%f")
-            try:
-                if team_id in valid_clubs and male == "0":  # only search CSV for relevant clubs + women
-                    if cat not in female_category_list:  # Each time there's a change of category,
-                        bcse_women_position = 1  # reset the rider's finish position to 1
-                        female_category_list.append(cat)
-                    else:
-                        bcse_women_position = bcse_women_position + 1
-                    position = row[1]  # Second index in row contains position number
-                    women_category = row[0]
-                    club = get_clubs(team_id)  # using get_clubs function to return clubs value
-                    name = get_names(name)  # using get_names function to return names which have been cleaned up
-                    points = points_calculator(cat, bcse_women_position)  # calculate rider points for that cat & position, including DQs
-                    if position == "0":  # Set the position to be written to CSV, which needs to be different if the rider was DQed (position ==0)
-                        position_for_file = "DQ"
-                        points = int(0)
-                    elif position != 0:
-                        position_for_file = bcse_women_position
-                    # dictionary of data to write to CSV
-                    data = {'Position': position_for_file, 'Category': women_category, 'Name': name, 'Club': club, 'Points': points, 'Time': time.strftime("%H:%M:%S.%f")}
-                    # set rider_name of file + opening & writing to output CSV
-                    write_csv_individual_results(
-                        ('Female/Individual Results/Female output' + women_category + ' ' + date.strftime("%Y, %B, %d") + '.csv'),
-                        values=data)
-            except IndexError:
-                pass
+        if len(row) > 7:
+            cat, position, name, time, team_id, male = row[0], row[1], row[2], row[3], row[4], row[7]
+            if team_id in valid_clubs and male == "0":  # only search CSV for relevant clubs + men
+                try:
+                    time = datetime.strptime(time, "%H:%M:%S.%f")  # get time as datetime
+                except ValueError:
+                    time = datetime.strptime(time, "%H:%M:%S.")  # get time as datetime
+                if cat not in female_category_list:  # Each time there's a change of category,
+                    bcse_women_position = 1  # reset the rider's finish position to 1
+                    female_category_list.append(cat)
+                else:
+                    bcse_women_position = bcse_women_position + 1
+                position = row[1]  # Second index in row contains position number
+                women_category = row[0]
+                club = get_clubs(team_id)  # using get_clubs function to return clubs value
+                name = get_names(name)  # using get_names function to return names which have been cleaned up
+                points = points_calculator(cat,
+                                           bcse_women_position)  # calculate rider points for that cat & position, including DQs
+                if position == "0":  # Set the position to be written to CSV, which needs to be different if the rider was DQed (position ==0)
+                    position_for_file = "DQ"
+                    points = int(0)
+                elif position != 0:
+                    position_for_file = bcse_women_position
+                # dictionary of data to write to CSV
+                data = {'Position': position_for_file, 'Category': women_category, 'Name': name, 'Club': club,
+                        'Points': points, 'Time': time.strftime("%H:%M:%S.%f")}
+                # set rider_name of file + opening & writing to output CSV
+                write_csv_individual_results(
+                    ('Female/Individual Results/Female output' + women_category + ' ' + date.strftime(
+                        "%Y, %B, %d") + '.csv'),
+                    values=data)
 
 merge_csv(r"Female\\Individual Results\\", "Female")
 merge_csv(r"Male\\Individual Results\\", "Male")
@@ -365,24 +370,17 @@ fields_clubs = ("Team", "Points", "AvgPoints", "NumOfRiders")  # setting the fie
 final_club_results_namedtuple = namedtuple('final_club_results_namedtuple', fields_clubs)
 
 tuple_club_full_results = sorted(
-    csv_to_tuple("Club Results/Full unsorted club Results" + date.strftime("%Y, %B, %d") + '.csv', final_club_results_namedtuple),
+    csv_to_tuple("Club Results/Full unsorted club Results" + date.strftime("%Y, %B, %d") + '.csv',
+                 final_club_results_namedtuple),
     key=lambda k: k.Team)  # sorting namedtuple into a grouped list
 
 write_data(tuple_club_full_results, "Full Club Results" + date.strftime("%Y, %B, %d") + '.csv')
 print(datetime.now(),
       Fore.GREEN + "Process Complete, check your folder for the results")  # print that the process is complete
-os.remove('results.csv')
+# os.remove('results.csv')
 os.remove("Club Results/Full unsorted club Results" + date.strftime("%Y, %B, %d") + '.csv')
 
 print("Execution time =", datetime.now() - date)
-print("Closing in 5 seconds")
-time_module.sleep(1)
-print("Closing in 4 seconds")
-time_module.sleep(1)
-print("Closing in 3 seconds")
-time_module.sleep(1)
-print("Closing in 2 seconds")
-time_module.sleep(1)
-print("Closing in 1 seconds")
-time_module.sleep(1)
-time_module.sleep(int(3600))  # sleep to stop terminal closing automatically so overview can be seen
+for i in range(1, 6):
+    print("Closing in %s seconds" % (6 - i))
+    time_module.sleep(1)
