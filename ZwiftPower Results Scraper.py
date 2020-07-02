@@ -288,7 +288,7 @@ with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # op
                 except ValueError:
                     pass
                 data = {'Position': position_for_file, 'Category': cat, 'Name': name, 'Club': club,
-                        'Points': points, 'Time': time.strftime("%H:%M:%S.%f")}  # dictionary of data to write to CSV
+                        'Points': points}  # dictionary of data to write to CSV
                 # set rider_name of file + opening & writing to output CSV
                 write_csv_individual_results(
                     ('Male/Individual Results/Male output' + cat + ' ' + date.strftime("%Y, %B, %d") + '.csv'),
@@ -323,7 +323,7 @@ with open("results.csv", 'rt', encoding='UTF-8', errors='ignore') as file:  # re
                     position_for_file = bcse_women_position
                 # dictionary of data to write to CSV
                 data = {'Position': position_for_file, 'Category': women_category, 'Name': name, 'Club': club,
-                        'Points': points, 'Time': time.strftime("%H:%M:%S.%f")}
+                        'Points': points}
                 # set rider_name of file + opening & writing to output CSV
                 write_csv_individual_results(
                     ('Female/Individual Results/Female output' + women_category + ' ' + date.strftime(
