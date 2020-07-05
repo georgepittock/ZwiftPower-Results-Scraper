@@ -163,6 +163,16 @@ def write_data(data_in, data_out):  # function to write namedtuple to a new CSV
                     writer.writerow(row)
 
 
+def remove_files(path):
+    for file_to_remove in os.listdir(path=path):
+        os.remove(path + '/' + file_to_remove)
+
+
+# removing all files
+remove_files('Male/Individual Results')
+remove_files('Female/Individual Results')
+remove_files('Club Results')
+
 # getting data race id
 race_id = input(
     "This programme will give you a brief overview of the results but to view the full results "
@@ -171,21 +181,6 @@ race_id = input(
     "\n")
 date = datetime.now()
 print(date, "Started")
-
-# removing all files
-try:
-    os.remove("results.csv")
-except:
-    pass
-
-for file_name_male in os.listdir(path='Male/Individual Results'):
-    os.remove('Male/Individual Results/' + file_name_male)
-
-for file_name_female in os.listdir(path='Female/Individual Results'):
-    os.remove('Female/Individual Results/' + file_name_female)
-
-for file_name_clubs in os.listdir(path='Club Results'):
-    os.remove('Club Results/' + file_name_clubs)
 
 # sending request to get html
 with requests.Session() as s:
@@ -351,7 +346,7 @@ tuple_club_full_results = sorted(
 write_data(tuple_club_full_results, "Club Results" + date.strftime("%Y, %B, %d") + '.csv')
 print(datetime.now(),
       Fore.GREEN + "Process Complete, check your folder for the results")  # print that the process is complete
-# os.remove('results.csv')
+os.remove('results.csv')
 os.remove("Club Results/Full unsorted club Results" + date.strftime("%Y, %B, %d") + '.csv')
 
 print("Execution time =", datetime.now() - date)
