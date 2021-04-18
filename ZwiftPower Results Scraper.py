@@ -21,9 +21,6 @@ with open("validclubs.txt") as f:  # opening txt file
 
 number_of_riders_counter = Counter()  # counter for number of riders in each category
 
-headers = {  # setting headers for request
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                  "(KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36/wziDaIGv-15"}
 # url of php script which post request is sent to
 url = "http://choddo.co.uk/ReadZP5.php"
 
